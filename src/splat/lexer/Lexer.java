@@ -17,7 +17,7 @@ public class Lexer {
 						"void","Integer","Boolean","String",
 						"true","false"
 						};
-	private String[] operators = {"<",">","==","<=",">=","+","-","*","/","%",
+	private String[] operators = {"<",">","=","==","<=",">=","+","-","*","/","%",
 								":",":=","and","or","not"};
 	private String[] symbols = {";","(",")","\"",","};
 	
@@ -58,6 +58,19 @@ public class Lexer {
 		return ch=='_' || Character.isLetterOrDigit(ch);
 	}
 
+	private Boolean isValidSymbol(String str)
+	{
+		for (int i=0; i< operators.length;i++)
+		{
+			if (str.equals(operators[i])) return true;
+		}
+		for (int i=0; i < symbols.length;i++)
+		{
+			if (str.equals(symbols[i])) return true;
+		}
+		return false;
+	}
+
 	public List<Token> tokenize() throws LexException {
 		// TODO Auto-generated method stub
 		// reading the file character by character, for tracking both the line and column
@@ -82,7 +95,7 @@ public class Lexer {
 				{
 					break;
 				}
-				char currentChar = line.charAt(Math.min(line.length()-1,column));
+				char currentChar = line.charAt(column);
 				
 				if (Character.isLetter(currentChar)  || currentChar=='_')
 				{
@@ -113,15 +126,15 @@ public class Lexer {
 				{
 					int index = column+1;
 					// read until hits non-digit or the end of line
-					while(index < line.length() && Character.isDigit(currentChar))
+					while(index < line.length() && Character.isDigit(line.charAt(index)))
 					{
 						index = index+1;
 					}
 					currentChar = line.charAt(Math.min(index,line.length() - 1));
 					// test whether the next char is alphabetic. If so, throw error
-					if(Character.isLetter(currentChar))
+					if(Character.isLetter(currentChar) || currentChar=='_')
 					{
-						throw new LexException("bad identifier", this.line_num, column);
+						throw new LexException("bad identifier"+currentChar, this.line_num, column);
 					}
 					currentLexeme = line.substring(column,index);
 					tokenType = Token.Type_.NUMBER;
@@ -130,19 +143,24 @@ public class Lexer {
 				}
 				// here comes the processing of non-alphanumeric characters
 				else {
-					int index = column + 1;
-					// read until hits alpha-numeric character or the end of line 
-					// or the max length of operator, which is 2.
-					while (index < line.length() && !( isLabelChar(line.charAt(index))
-													|| Character.isWhitespace(line.charAt(index))
-													 )
-							&& index < column + 2)
+					int index = column;
+					// read until the symbol makes sense, i.e. valid. Eager implementation
+					while (index < line.length())
 					{
-						index = index + 1;
+						if ( isValidSymbol( line.substring(column, index+1)) )
+						{
+							index = index + 1;
+						}else{
+							break;
+						}
 					}
 					currentLexeme = line.substring(column, index);
 					tokenType = Token.Type_.SYMBOL;
 					// next goes checking the validity of the lexeme
+					if (currentLexeme.length() == 0 || currentLexeme.equals("="))
+					{
+						throw new LexException("unknown symbol1", this.line_num, column);
+					}
 
 					// check whether an operator
 					if (isOperator(currentLexeme))
@@ -153,37 +171,35 @@ public class Lexer {
 					else if(isSymbol(currentLexeme))
 					{
 						// check if the opening quotes, i.e. string literal
-						if(currentLexeme.contains("\""))
+						if(currentLexeme.equals("\""))
 						{
 							//processing the string literal
-							index = column+1;
-							while (index < line.length())
+							while (index < line.length() && line.charAt(index)!='\"')
 							{
-								if (line.charAt(index) == '\"')
-								{
-									currentLexeme = line.substring(column + 1, index);
-									index++;
-									tokenType = Token.Type_.StringLiteral;
-									break;
-								}
 								if (line.charAt(index) == '\\')
 								{
 									throw new LexException("backslashes are prohibited",
-											 this.line_num, column);
+											 this.line_num, index);
 								}
 								index = index + 1;
 							}
+							// if hits the end of line and no double quote exist then throw error
 							if (index == line.length()){
-								throw new LexException("invalid string literal",
+								throw new LexException("unclosed string literal",
 														this.line_num, column);	
 							}
+							currentLexeme = line.substring(column, index);
+							tokenType = Token.Type_.StringLiteral;
+							//since the index at this point is at the closing doulbe quote
+							// we should update index by 1 to process the next characters
+							index = index+1;
 						}
-						else 
+						else
 						{
 							tokenType = Token.Type_.SYMBOL;
 						}
 					}
-					else {
+					else {// it should never reach this point
 						throw new LexException("unknown symbol", this.line_num, column);
 					}
 
