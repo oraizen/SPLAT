@@ -41,4 +41,21 @@ public class Token {
     {
         this.lexeme_ = lexeme;
     }
+    public String getValue()
+    {
+        return lexeme_;
+    }
+    public int getColumn()
+    {
+        return column_;
+    }
+    public int getLine()
+    {
+        return line_;
+    }
+
+    public Type_ getType()
+    {
+        return this.tokenType_;
+    }
 }

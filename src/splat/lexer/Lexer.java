@@ -134,7 +134,7 @@ public class Lexer {
 					// test whether the next char is alphabetic. If so, throw error
 					if(Character.isLetter(currentChar) || currentChar=='_')
 					{
-						throw new LexException("bad identifier"+currentChar, this.line_num, column);
+						throw new LexException("bad identifier", this.line_num, column);
 					}
 					currentLexeme = line.substring(column,index);
 					tokenType = Token.Type_.NUMBER;
@@ -159,7 +159,7 @@ public class Lexer {
 					// next goes checking the validity of the lexeme
 					if (currentLexeme.length() == 0 || currentLexeme.equals("="))
 					{
-						throw new LexException("unknown symbol1", this.line_num, column);
+						throw new LexException("unknown symbol", this.line_num, column);
 					}
 
 					// check whether an operator
