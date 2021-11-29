@@ -13,13 +13,13 @@ public class LexerTester {
 	private int success;
 	private int failure;
 
-	public static void main(String[] args) {
+/*	public static void main(String[] args) {
 
 		LexerTester tester = new LexerTester(true);
 		tester.runTests();
 		File directory = new File("./");
 		System.out.println(directory.getAbsolutePath());
-	}
+	}*/
 
 	public LexerTester(boolean seeResults) {
 		verbose = seeResults;

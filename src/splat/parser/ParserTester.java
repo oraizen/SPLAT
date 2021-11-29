@@ -126,7 +126,7 @@ public class ParserTester {
 				success++;
 				System.out.println("passed (parse error caught)");
 				if (verbose) {
-					System.out.println(ex.getMessage());
+					System.out.println(ex);
 					System.out.println();
 				}
 
@@ -134,7 +134,7 @@ public class ParserTester {
 			} else {
 				failure++;
 				System.out.println("failed - parsing should have been successful");
-				System.out.println(ex.getMessage());
+				System.out.println(ex);
 				System.out.println();
 			}
 

@@ -1,6 +1,5 @@
 package splat.parser;
 
-import java.beans.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -171,6 +170,9 @@ public class Parser {
 		return null;
 	}
 
+	/*
+	checks whether the token contains the valid label
+	*/
 	private void checkLabel(Token label) throws ParseException
 	{
 		if (label.getType() != Token.Type_.IDENTIFIER)
@@ -179,6 +181,10 @@ public class Parser {
 		}
 	}
 
+	/*
+	checks whether the token contains the valid return type
+	Valid return-types: Boolean, Integer, String, void
+	*/
 	private void checkReturnType(Token returnType) throws ParseException
 	{
 		String str = returnType.getValue();
@@ -190,6 +196,10 @@ public class Parser {
 		throw new ParseException("Expected return type, but got "+str, returnType);
 	}
 
+	/*
+	checks whether the token contains the valid type
+	Valid types: Boolean, Integer, String
+	*/
 	private void checkType(Token parameter) throws ParseException
 	{
 		String paramType = parameter.getValue();
@@ -222,27 +232,114 @@ public class Parser {
 	 */
 	private List<Statement> parseStmts() throws ParseException {
 		// TODO Auto-generated method stub
+		List<Statement> stmts = new ArrayList<>();
 
-		if (peekTwoAhead(":=")){
-			//parse assignment
-		}else if(peekNext("while")){
-			// parse while loop
-		}else if(peekNext("if")){
-			// parse if statement
-		}else if(peekTwoAhead("(")){
-			//parse function call
-		}else if(peekNext("print")){
-			// parse print statement
-		}else if(peekNext("print_line")){
-			//parse print_line statement
-		}else if(peekNext("return")){
-			//parse return statement;
-		}else {
-			Token tok = tokens.get(0);
-			throw new ParseException("Statement expected", tok);
+		while (!peekNext("end") || !peekNext("else"))
+		{
+			if (peekTwoAhead(":=")){
+				//parse assignment
+				stmts.add(parseAssignment());
+
+			}else if(peekNext("while")){
+				// parse while loop
+				stmts.add(parseWhileLoop());
+
+			}else if(peekNext("if")){
+				// parse if statement
+				stmts.add( parseIfConditional() );
+
+			}else if(peekTwoAhead("(")){
+				//parse function call
+				stmts.add(parseFuncCallStatement());
+
+			}else if(peekNext("print")){
+				// parse print statement
+				// remove the "print" token
+				Token tok = tokens.remove(0);
+				Expression expr = parseExpression();
+				checkNext(";");
+				stmts.add(new PrintStatement(tok, expr));
+
+
+			}else if(peekNext("print_line")){
+				//parse print_line statement
+				Token tok = tokens.remove(0);
+				stmts.add(new PrintLineStatement(tok));
+				checkNext(";");
+
+			}else if(peekNext("return")){
+				//parse return statement;
+				Token tok = tokens.remove(0);
+				if ( peekNext(";") )
+				{
+					stmts.add(new voidReturnStatement(tok));
+				} else {
+					Expression expr = parseExpression();
+					stmts.add( new NonVoidReturn(tok, expr) );
+				}
+				checkNext(";");
+
+			}else {
+				Token tok = tokens.get(0);
+				throw new ParseException("Statement expected", tok);
+			}
 		}
+		return stmts;
+	}
 
-		return null;
+	private Statement parseFuncCallStatement()  throws ParseException {
+		Token tok = tokens.remove(0);
+		checkLabel(tok);
+		checkNext("(");
+		List<Expression> args = new ArrayList<>();
+		while(!peekNext(")"))
+		{
+			if (args.size()>0)
+			{
+				checkNext(",");
+			}
+			Expression arg = parseExpression();
+			args.add(arg);
+		}
+		// remove the ")" token
+		tokens.remove(0);
+		checkNext(";");
+		return new FuncCallStatement(tok, args);
+	}
+
+	private Statement parseIfConditional() throws ParseException
+	{
+		Token tok = tokens.get(0);
+		checkNext("if");
+		Expression expr = parseExpression();
+		checkNext("then");
+		List<Statement> ifStmts = parseStmts();
+		if (peekNext("else")){
+			// remove the "else" token
+			tokens.remove(0);
+			List<Statement> elseStmts = parseStmts();
+			checkNext("end");
+			checkNext("if");
+			checkNext(";");
+			return new IfElseBlock(tok, expr, ifStmts, elseStmts);
+		}
+		checkNext("end");
+		checkNext("if");
+		checkNext(";");
+		return new IfBlock(tok, expr, ifStmts);
+	}
+
+	private WhileLoop parseWhileLoop() throws ParseException
+	{
+		Token whileLoopToken = tokens.get(0);
+		checkNext("while");
+		Expression expr = parseExpression();
+		checkNext("do");
+		List<Statement> loopStmts = parseStmts();
+		checkNext("end");
+		checkNext("while");
+		checkNext(";");
+		return new WhileLoop(whileLoopToken, expr, loopStmts); 
 	}
 
 	private Assignment parseAssignment() throws ParseException
@@ -250,11 +347,11 @@ public class Parser {
 		Token label = tokens.remove(0);
 		checkLabel(label);
 		checkNext(":=");
-		//todo!
+		
 		Expression expr = parseExpression();
 		checkNext(";");
 		return new Assignment(label, label.getValue(), expr);
-		//todo!
+		
 	}
 	private Boolean isUnaryOp(String str){
 		for (String op : this.unary_operators){
@@ -271,17 +368,47 @@ public class Parser {
 		}
 		return false;
 	}
+	private Boolean isLiteral(Token tok) {
+		Token.Type_ type = tok.getType();
+		if (type == Token.Type_.NUMBER || type == Token.Type_.StringLiteral
+				|| tok.getValue()=="true" || tok.getValue()=="false"){
+					return true;
+		}
+		return false;
+	}
+	private Literal parseLiteral(){
+		Token tok = tokens.remove(0);
+		if (tok.getType() == Token.Type_.NUMBER){
+			return new Literal(tok, "Integer", tok.getValue());
+		}else if(tok.getType() == Token.Type_.StringLiteral){
+			return new Literal(tok,"String", tok.getValue());
+		}else{
+			return new Literal(tok,"Boolean",tok.getValue());
+		}
+	}
 
 	private Expression parseExpression() throws ParseException{
 
 		if (peekNext("("))
 		{
 			// unary or binary operation
-			Expression expr = parseOpExpression();
-			return expr;
+			return parseOpExpression();
 
-		}else if (peekTwoAhead("(")){
+		}else if ( peekTwoAhead("(") ){
 			// function call expression
+			return parseFuncCall();
+
+		}else if(tokens.get(0).getType() == Token.Type_.IDENTIFIER){
+			// single variable call expression
+			return new Variable(tokens.remove(0));
+
+		}else if (isLiteral(tokens.get(0))){
+			// literal expression
+			return parseLiteral();
+
+		}else {
+			throw new ParseException("expected expression, but got "
+										+tokens.get(0).getValue(), tokens.get(0));
 		}
 	}
 
