@@ -21,13 +21,17 @@ public class FunctionDecl extends Declaration {
 	private String label_;
 	private String returnType_;
 	private List<Param> params_;
+	private List<Statement> stmts;
 	
 	// Need to add extra arguments for setting fields in the constructor 
-	public FunctionDecl(Token tok, String label, String returnType,List<Param> params) {
+	public FunctionDecl(Token tok, String label,
+						String returnType,List<Param> params,
+						List<Statement> s) {
 		super(tok);
 		this.label_ = label;
 		this.returnType_ = returnType;
 		this.params_ = params;
+		this.stmts = s;
 	}
 
 	public String getLabel(){
@@ -40,6 +44,7 @@ public class FunctionDecl extends Declaration {
 	
 	// Fix this as well
 	public String toString() {
-		return null;
+		return "Function Declaration with label "+this.label_
+		+ " ,return type: "+this.returnType_;
 	}
 }

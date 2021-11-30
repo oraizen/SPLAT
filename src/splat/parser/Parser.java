@@ -118,7 +118,7 @@ public class Parser {
 			return parseFuncDecl();
 		} else {
 			Token tok = tokens.get(0);
-			throw new ParseException("Declaration expected", tok);
+			throw new ParseException("Declaration expected:", tok);
 		}
 	}
 	
@@ -164,10 +164,11 @@ public class Parser {
 
 		// remove the "begin" token
 		checkNext("begin");
+		List<Statement> stmts = parseStmts();
+		checkNext("end");
+		checkNext(";");
 
-
-
-		return null;
+		return new FunctionDecl(tok, tok.getValue(), returnType.getValue(), params, stmts);
 	}
 
 	/*
@@ -234,9 +235,9 @@ public class Parser {
 		// TODO Auto-generated method stub
 		List<Statement> stmts = new ArrayList<>();
 
-		while (!peekNext("end") || !peekNext("else"))
+		while (!peekNext("end") && !peekNext("else"))
 		{
-			if (peekTwoAhead(":=")){
+			if (peekTwoAhead(":=") && tokens.get(0).getType()==Token.Type_.IDENTIFIER){
 				//parse assignment
 				stmts.add(parseAssignment());
 
@@ -248,7 +249,7 @@ public class Parser {
 				// parse if statement
 				stmts.add( parseIfConditional() );
 
-			}else if(peekTwoAhead("(")){
+			}else if(peekTwoAhead("(") && tokens.get(0).getType()==Token.Type_.IDENTIFIER){
 				//parse function call
 				stmts.add(parseFuncCallStatement());
 
@@ -371,7 +372,7 @@ public class Parser {
 	private Boolean isLiteral(Token tok) {
 		Token.Type_ type = tok.getType();
 		if (type == Token.Type_.NUMBER || type == Token.Type_.StringLiteral
-				|| tok.getValue()=="true" || tok.getValue()=="false"){
+				|| tok.getValue().equals("true") || tok.getValue().equals("false")){
 					return true;
 		}
 		return false;
@@ -394,7 +395,7 @@ public class Parser {
 			// unary or binary operation
 			return parseOpExpression();
 
-		}else if ( peekTwoAhead("(") ){
+		}else if ( peekTwoAhead("(") && tokens.get(0).getType()==Token.Type_.IDENTIFIER){
 			// function call expression
 			return parseFuncCall();
 
@@ -424,6 +425,7 @@ public class Parser {
 			//remove the unary operator toke
 			tokens.remove(0);
 			Expression expr = parseExpression();
+			checkNext(")");
 			return new UnaryOpExpression(tok, op, expr);
 		}
 		Expression left = parseExpression();
@@ -434,7 +436,7 @@ public class Parser {
 		}
 		Expression right = parseExpression();
 		checkNext(")");
-		return new BinaryOpExpression(op, left, right);
+		return new BinaryOpExpression(tok, op.getValue(), left, right);
 	}
 
 	private FunctionCall parseFuncCall() throws ParseException

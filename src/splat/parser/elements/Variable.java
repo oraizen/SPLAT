@@ -8,6 +8,7 @@ public class Variable extends Expression{
     public Variable(Token tok)
     {
         super(tok);
+        label = tok.getValue();
     }
 
 }

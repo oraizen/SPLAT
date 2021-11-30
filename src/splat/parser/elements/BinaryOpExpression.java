@@ -7,8 +7,9 @@ public class BinaryOpExpression extends Expression{
     private Expression left;
     private Expression right;
 
-    public BinaryOpExpression(Token tok, Expression l, Expression r){
+    public BinaryOpExpression(Token tok, String op,Expression l, Expression r){
         super(tok);
+        operator = op;
         left = l;
         right = r;
     }
