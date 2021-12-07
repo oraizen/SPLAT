@@ -168,7 +168,8 @@ public class Parser {
 		checkNext("end");
 		checkNext(";");
 
-		return new FunctionDecl(tok, tok.getValue(), returnType.getValue(), params, stmts);
+		return new FunctionDecl(tok, tok.getValue(), returnType.getValue(), params,
+								funcDecls, stmts);
 	}
 
 	/*
@@ -291,6 +292,7 @@ public class Parser {
 	private Statement parseFuncCallStatement()  throws ParseException {
 		Token tok = tokens.remove(0);
 		checkLabel(tok);
+		String fLabel = tok.getValue();
 		checkNext("(");
 		List<Expression> args = new ArrayList<>();
 		while(!peekNext(")"))
@@ -305,7 +307,7 @@ public class Parser {
 		// remove the ")" token
 		tokens.remove(0);
 		checkNext(";");
-		return new FuncCallStatement(tok, args);
+		return new FuncCallStatement(tok, fLabel, args);
 	}
 
 	private Statement parseIfConditional() throws ParseException
@@ -442,6 +444,7 @@ public class Parser {
 	private FunctionCall parseFuncCall() throws ParseException
 	{
 		Token label = tokens.remove(0);
+		String label_string = label.getValue();
 		checkLabel(label);
 		checkNext("(");
 		List<Expression> args = new ArrayList<>();
@@ -456,6 +459,6 @@ public class Parser {
 		}
 		// remove the ")" token
 		tokens.remove(0);
-		return new FunctionCall(label, args);
+		return new FunctionCall(label, label_string, args);
 	}
 }

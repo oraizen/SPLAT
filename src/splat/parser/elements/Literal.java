@@ -1,5 +1,6 @@
 package splat.parser.elements;
 import splat.lexer.Token;
+import java.util.Map;
 
 public class Literal extends Expression{
     
@@ -12,4 +13,12 @@ public class Literal extends Expression{
         type = t;
         literal_value = l;
     }
+
+    public Type analyzeAndGetType(Map<String, FunctionDecl> funcMap,
+	                              Map<String, Type> varAndParamMap) {
+        
+        return new Type(type);
+
+    }
+	
 }

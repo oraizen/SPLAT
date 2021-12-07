@@ -4,7 +4,15 @@ import splat.lexer.Token;
 
 public abstract class Declaration extends ASTElement {
 
-	public Declaration(Token tok) {
+	private String label;
+
+	public Declaration(Token tok,String l) {
 		super(tok);
+		label = l;
+	}
+
+	public String getLabel()
+	{
+		return label;
 	}
 }
