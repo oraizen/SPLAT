@@ -1,8 +1,11 @@
 package splat.parser.elements;
+import splat.executor.ExecutionException;
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 
 import java.util.Map;
+
+import splat.executor.Value;
 
 public class Variable extends Expression{
     
@@ -22,5 +25,12 @@ public class Variable extends Expression{
         }
         return varAndParamMap.get(this.label);
     }
+
+    public Value evaluate(Map<String, FunctionDecl> funcMap,
+                          Map<String, Value> varAndParamMap) throws ExecutionException
+    {
+        return varAndParamMap.get(this.label);
+    }
+    
 
 }

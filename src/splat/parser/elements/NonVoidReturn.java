@@ -1,4 +1,7 @@
 package splat.parser.elements;
+import splat.executor.ExecutionException;
+import splat.executor.ReturnFromCall;
+import splat.executor.Value;
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 import java.util.Map;
@@ -19,5 +22,13 @@ public class NonVoidReturn extends Statement{
         {
             throw new SemanticAnalysisException("return type mismatch", this);
         }
+    }
+
+    public void execute(Map<String, FunctionDecl> funcMap,
+	                              Map<String, Value> varAndParamMap) 
+										throws ReturnFromCall,ExecutionException
+    {
+        Value exprVal = this.expr.evaluate(funcMap, varAndParamMap);
+        throw new ReturnFromCall(exprVal);
     }
 }

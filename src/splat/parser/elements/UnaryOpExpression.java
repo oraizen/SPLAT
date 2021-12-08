@@ -1,4 +1,8 @@
 package splat.parser.elements;
+import splat.executor.BooleanValue;
+import splat.executor.ExecutionException;
+import splat.executor.IntegerValue;
+import splat.executor.Value;
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 
@@ -35,6 +39,15 @@ public class UnaryOpExpression extends Expression{
         }
     }
 	
-    
+    public Value evaluate(Map<String, FunctionDecl> funcMap,
+                          Map<String, Value> varAndParamMap) throws ExecutionException{
+        
+        Value exprVal = this.expr.evaluate(funcMap, varAndParamMap);
+        if (this.operator.equals("-")){
+            return new IntegerValue( -((IntegerValue)exprVal).getValue() );
+        }else{
+            return new BooleanValue( !((BooleanValue)exprVal).getValue() );
+        }
+    }
 
 }

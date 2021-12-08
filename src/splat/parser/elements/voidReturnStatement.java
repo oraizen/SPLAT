@@ -1,4 +1,7 @@
 package splat.parser.elements;
+import splat.executor.BooleanValue;
+import splat.executor.ReturnFromCall;
+import splat.executor.Value;
 import splat.lexer.Token;
 import java.util.Map;
 import splat.semanticanalyzer.SemanticAnalysisException;
@@ -20,6 +23,12 @@ public class voidReturnStatement extends Statement {
         {
             throw new SemanticAnalysisException("expected void return statement", this);
         }
+    }
+
+    public void execute(Map<String, FunctionDecl> funcMap,
+                        Map<String, Value> varAndParamMap) throws ReturnFromCall
+    {
+        throw new ReturnFromCall(new BooleanValue(false));
     }
 
 }

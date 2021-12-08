@@ -1,6 +1,8 @@
 package splat.parser.elements;
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
+import splat.executor.ExecutionException;
+import splat.executor.Value;
 
 import java.util.Map;
 
@@ -15,6 +17,14 @@ public class BinaryOpExpression extends Expression{
         operator = op;
         left = l;
         right = r;
+    }
+
+    public Value evaluate(Map<String, FunctionDecl> funcMap,
+                                 Map<String, Value> varAndParamMap) throws ExecutionException
+    {
+        Value lval = this.left.evaluate(funcMap, varAndParamMap);
+        Value rval = this.right.evaluate(funcMap, varAndParamMap);
+        return lval.evaluateBinary(rval, this.operator, this);
     }
 
     public Type analyzeAndGetType(Map<String, FunctionDecl> funcMap,

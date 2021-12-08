@@ -1,4 +1,7 @@
 package splat.parser.elements;
+import splat.executor.ExecutionException;
+import splat.executor.ReturnFromCall;
+import splat.executor.Value;
 import splat.lexer.Token;
 import splat.semanticanalyzer.SemanticAnalysisException;
 
@@ -38,5 +41,13 @@ public class Assignment extends Statement{
         }
     }
 	
+    public void execute(Map<String, FunctionDecl> funcMap,
+	                              Map<String, Value> varAndParamMap) 
+										throws ReturnFromCall,ExecutionException
+    {
+        Value exprVal = this.right.evaluate(funcMap, varAndParamMap);
+        varAndParamMap.put(this.label, exprVal);
+    }  
+
 
 }

@@ -188,7 +188,7 @@ public class Lexer {
 								throw new LexException("unclosed string literal",
 														this.line_num, column);	
 							}
-							currentLexeme = line.substring(column, index);
+							currentLexeme = line.substring(column+1, index);
 							tokenType = Token.Type_.StringLiteral;
 							//since the index at this point is at the closing doulbe quote
 							// we should update index by 1 to process the next characters

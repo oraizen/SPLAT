@@ -76,7 +76,7 @@ public class SemanticAnalyzer {
 		
 		// Perform semantic analysis on the function body
 		for (Statement stmt : funcDecl.getStmts()) {
-			stmt.analyze(funcMap, varAndParamMap);
+			stmt.analyze(this.funcMap, varAndParamMap);
 		}
 		List<Statement> stms = funcDecl.getStmts();
 		if ( !funcDecl.getReturnType().equals("void") ){
